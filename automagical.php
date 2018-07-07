@@ -30,6 +30,7 @@ function automagical_links_settings ()
     register_setting( 'automagical_links-plugin-settings-group', 'link_end_characters' );
     register_setting( 'automagical_links-plugin-settings-group', 'link_escape_character' );
     register_setting( 'automagical_links-plugin-settings-group', 'allowed_post_types' );
+
 }
 
 function automagical_links_settings_page ()
@@ -40,6 +41,54 @@ function automagical_links_settings_page ()
         <form method="post" action="options.php">
             <?php settings_fields( 'automagical_links-plugin-settings-group' ); ?>
             <?php do_settings_sections( 'automagical_links-plugin-settings-group' ); ?>
+            <table class="form-table">
+            <tbody>
+            <tr>
+                <th scope="row" colspan="4"">Post Types</th>
+            </tr>
+            <?php
+
+            $all_post_types = get_post_types()  ;
+
+            $allowed_post_types = get_option ('allowed_post_types') ;
+
+            $columns = 4 ;
+
+            $column_counter = 0;
+
+            $post_counter = 0 ;
+
+            ksort ($all_post_types);
+
+            foreach ( $all_post_types as $name => $value ) {
+
+                if ( $column_counter%$columns==0 ) {
+                    printf( '<tr>' );
+                }
+
+                $replace['-'] = ' ' ;
+                $replace['_'] = ' ' ;
+                $replace['wp'] = 'WP' ;
+                $name = ucwords( strtr ( $name, $replace ) ) ;
+
+                printf( '<td><input type="checkbox" name="allowed_post_types[%1$s]" id="posts_%3$d" value="1"' . checked ( '1', isset ( $allowed_post_types[$value] ), false ) . '> <label for="posts_%3$d">%2$s</label></td>', $value, $name, $post_counter );
+
+                $column_counter++ ;
+
+                if ( $column_counter%$columns==0 ) {
+                    printf( '</tr>' );
+                    $column_counter = 0;
+                }
+
+                $post_counter++ ;
+            }
+
+            ?>
+            </tbody>
+            </table>
+
+            <!--////////////////////////////////////////////////////////////-->
+
             <table class="form-table">
                 <tr valign="top">
                     <th scope="row" width="30%"><label for="autolinking">Enable Autolinking:</label></th>
@@ -97,12 +146,13 @@ function automagical_links_filter ( $content ) {
     $link_start_characters = get_option( 'link_start_characters' ) ;
     $link_end_characters = get_option( 'link_end_characters' ) ;
     $link_escape_character = get_option( 'link_escape_character' ) ;
+    $allowed_post_types = get_option ('allowed_post_types') ;
 
     if ( $autolinking ) {
 
         if ( is_singular ( ) ) {
 
-            $post_types = array ( 'person', 'page', 'thesis', 'project', 'essay', 'work' );
+            $post_types = array_keys ( $allowed_post_types ) ;
 
             $all_pages = get_posts ( array ( 'post_type' => $post_types, 'post_status' => 'publish', 'numberposts' => -1 ) );
 
@@ -115,22 +165,29 @@ function automagical_links_filter ( $content ) {
 
             }
 
-            // Remove brackets for any unmatched pages. string strtr ( string $str , array $replace_pairs )
+            // Remove brackets for any unmatched pages.
             $content = strtr ( $content, $replace_pairs );
 
-            if ( $link_escape_character == '\\' ) {
-                $link_escape_character .= $link_escape_character ;
-            }
-
-            // Remove double backslashes; yes, the second arg is a single space!
-            $content = strtr ( $content, $link_escape_character, ' ' );
+            // Remove escape character.
+            $content = str_replace( $link_escape_character,'',$content) ;
 
         }
 
     }
 
-    // Remove start and end characters in case the user enables and later disables autolinking.
-    $content = strtr ( $content, array ( $link_start_characters => '', $link_end_characters => '' ) );
+    // Remove start characters, end characters, and escape characters in
+    // case the user enables and later disables autolinking.
+    // Requires the plugin to still be activated, of course!
+
+    if ($link_start_characters) {
+        $content = str_replace( $link_start_characters,'',$content) ;
+    }
+    if ($link_end_characters) {
+        $content = str_replace( $link_end_characters,'',$content) ;
+    }
+    if ($link_escape_character) {
+        $content = str_replace( $link_escape_character,'',$content) ;
+    }
 
     return $content;
 
