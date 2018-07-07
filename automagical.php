@@ -12,34 +12,6 @@ Version: 0.1
 Author URI: http://baizmandesign.com/
 */
 
-//include 'options.php' ;
-
-/*
- * toggle autolinking
- * _toggle automagical linking
- * set link character
- * set link escape character
- * choose post types where linking occurs
- */
-
-// This just echoes the chosen line, we'll position it later
-function automagical_links ()
-{
-    echo "<p>hello</p>";
-}
-
-// Now we set that function up to execute when the admin_notices action is called
-// add_action( 'admin_notices', 'hello_dolly' );
-
-// We need some CSS to position the paragraph
-//function automagical_links_css ()
-//{
-//
-//}
-
-//add_action( 'admin_head', 'automagical_links_css' );
-
-
 add_action( 'admin_menu', 'automagical_links_admin_menu' );
 
 function automagical_links_admin_menu ()
@@ -65,7 +37,6 @@ function automagical_links_settings_page ()
     ?>
     <div class="wrap">
         <h1>AutomagicaLinks Settings</h1>
-<?php echo 'autolinking: ' ; print_r ( get_option( 'autolinking' ) ) ; ?>
         <form method="post" action="options.php">
             <?php settings_fields( 'automagical_links-plugin-settings-group' ); ?>
             <?php do_settings_sections( 'automagical_links-plugin-settings-group' ); ?>
@@ -110,7 +81,7 @@ function automagical_links_settings_page ()
 
             </table>
             <?php
-//            print_r ( get_post_types());
+
             ?>
 
             <?php submit_button(); ?>
@@ -121,59 +92,45 @@ function automagical_links_settings_page ()
 
 function automagical_links_filter ( $content ) {
 
-    /* Check if the page is being viewed as a singleton? Or is a certain post type?
-     * Note: this runs every time a post is loaded, including multiple times on a given template.
-     * It looks something like this...
-     * Get a list of post titles for projects and people and essays.
-     * Search the text for mention of these items. (Name could be inside another word, like "Jeff Bartell's essay."
-     * If only one instance is found, and the text is not already a link, link it.
-     * Return the text.
-     * Maybe allow forcing auto-linking by surrounding text in parentheses? or disable?
-     */
-//echo 'get_option( \'autolinking\' ): "' . get_option( 'autolinking' ) . '"' ; ;
-    if ( get_option( 'autolinking' ) ) {
+    $autolinking = get_option( 'autolinking' ) ;
+    $automagicality = get_option( 'automagicality' ) ;
+    $link_start_characters = get_option( 'link_start_characters' ) ;
+    $link_end_characters = get_option( 'link_end_characters' ) ;
+    $link_escape_character = get_option( 'link_escape_character' ) ;
 
-        if ( is_single() ) {
+    if ( $autolinking ) {
+
+        if ( is_singular ( ) ) {
 
             $post_types = array ( 'person', 'page', 'thesis', 'project', 'essay', 'work' );
 
-            $all_pages = get_posts( array ( 'post_type' => $post_types, 'post_status' => 'publish', 'numberposts' => -1 ) );
+            $all_pages = get_posts ( array ( 'post_type' => $post_types, 'post_status' => 'publish', 'numberposts' => -1 ) );
 
             foreach ( $all_pages as $page ) {
                 // Look for double brackets or not?
-                $search = get_option( 'automagicality' ) ?  $page->post_title : '[[' . $page->post_title . ']]' ;
-                $replace = sprintf( '<a href="%1$s">%2$s</a>', $page->guid, $page->post_title );
+                $search = $automagicality ?  $page->post_title : $link_start_characters . $page->post_title . $link_end_characters ;
+                $replace = sprintf ( '<a href="%1$s">%2$s</a>', $page->guid, $page->post_title );
 
                 $replace_pairs[ $search ] = $replace;
 
-                // PROBLEM: duplicate page names. Only the last one will get picked (whichever one that is).
-                // PROBLEM: when you want more text to link to it, like "View John Howrey's bio."
-                // Possible alternative syntax: [[John Howrey:View John Howrey's bio]]
-                // PROBLEM: ambiguity of names. Let's say there's a student with the name Jennifer Lawrence,
-                // and someone writes an essay that mentions the actress Jennifer Lawrence. The system will link
-                // to the student.
-                // Possible solution: mechanism to disable the auto linking (like \\Jennifer \\Lawrence).
-                // What's the performance hit?
-                // WARNING: no tags can be people's names or page names!
             }
 
-            $content = strtr ( $content, $replace_pairs ); // string strtr ( string $str , array $replace_pairs )
-            $content = strtr ( $content, array (
-                    get_option( 'link_start_characters' ) => '',
-                    get_option( 'link_end_characters' ) => '' )
-                    ); // remove brackets for any unmatched pages.
+            // Remove brackets for any unmatched pages. string strtr ( string $str , array $replace_pairs )
+            $content = strtr ( $content, $replace_pairs );
 
-            $escape = get_option( 'link_escape_character' ) ;
-
-            if ( $escape == '\\' ) {
-                $escape .= $escape ;
+            if ( $link_escape_character == '\\' ) {
+                $link_escape_character .= $link_escape_character ;
             }
 
-            $content = strtr ( $content, $escape , ' ' ); // remove double backslashes; yes, the second arg is a single space!
+            // Remove double backslashes; yes, the second arg is a single space!
+            $content = strtr ( $content, $link_escape_character, ' ' );
 
         }
 
     }
+
+    // Remove start and end characters in case the user enables and later disables autolinking.
+    $content = strtr ( $content, array ( $link_start_characters => '', $link_end_characters => '' ) );
 
     return $content;
 
