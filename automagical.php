@@ -141,6 +141,8 @@ function automagical_links_settings_page ()
 
 function automagical_links_filter ( $content ) {
 
+    global $wpdb;
+
     $autolinking = get_option( 'autolinking' ) ;
     $automagicality = get_option( 'automagicality' ) ;
     $link_start_characters = get_option( 'link_start_characters' ) ;
@@ -152,24 +154,56 @@ function automagical_links_filter ( $content ) {
 
         if ( is_singular ( ) ) {
 
+            $replace_pairs = array ( ) ;
+            $duplicates_pairs = array ( );
+
             $post_types = array_keys ( $allowed_post_types ) ;
 
-            $all_pages = get_posts ( array ( 'post_type' => $post_types, 'post_status' => 'publish', 'numberposts' => -1 ) );
-
-            foreach ( $all_pages as $page ) {
-                // Look for double brackets or not?
-                $search = $automagicality ?  $page->post_title : $link_start_characters . $page->post_title . $link_end_characters ;
-                $replace = sprintf ( '<a href="%1$s">%2$s</a>', $page->guid, $page->post_title );
-
-                $replace_pairs[ $search ] = $replace;
-
+            if ( ! $post_types ) {
+                return $content ;
             }
 
-            // Remove brackets for any unmatched pages.
-            $content = strtr ( $content, $replace_pairs );
+            // Note our permalink structure below.
+            // This may have to be customized for other sites!
+            // In the wp_options table there is a record where option_name = "permalink_structure",
+            // according to https://wordpress.stackexchange.com/questions/58625/where-is-permalink-info-stored-in-database
 
-            // Remove escape character.
-            $content = str_replace( $link_escape_character,'',$content) ;
+            $all_pages_sql = sprintf ("SELECT ID, post_title, post_name, post_type, concat_ws('/','%s', post_type, post_name,'') AS permalink FROM %s WHERE post_type IN ('%s') AND post_title != '%s'",
+                'http://' . $_SERVER['HTTP_HOST'],
+                $wpdb->posts,
+                implode("','",$post_types),
+                'Auto Draft') ;
+
+            $all_pages = $wpdb->get_results($all_pages_sql);
+
+            if ( $all_pages ) {
+
+                foreach ( $all_pages as $page ) {
+
+                    // Look for double brackets or not?
+                    $search = $automagicality ? $page->post_title : $link_start_characters . $page->post_title . $link_end_characters;
+                    $replace = sprintf( '<a href="%1$s">%2$s</a>', $page->permalink, $page->post_title );
+
+                    // Fix "real" links that get nested after we automagically link them:
+                    // <a href=""><a href="">Word</a></a>
+                    $dupe_search = sprintf( '<a href="%1$s">',$page->permalink).sprintf( '<a href="%1$s">',$page->permalink).$page->post_title.'</a>'.'</a>';
+                    $dupe_replace = $replace;
+
+                    $replace_pairs[ $search ] = $replace;
+                    $duplicates_pairs[ $dupe_search ] = $dupe_replace;
+
+                }
+
+                // The magic happens here.
+                $content = strtr( $content, $replace_pairs );
+                $content = strtr( $content, $duplicates_pairs );
+
+                // Remove escape character.
+                $content = str_replace( $link_escape_character, '', $content );
+            }
+            else {
+                return $content;
+            }
 
         }
 
