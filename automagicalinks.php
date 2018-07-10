@@ -1,10 +1,10 @@
 <?php
 /**
- * @package Automagical_Links
+ * @package automagicalinks
  * @version 0.1
  */
 /*
-Plugin Name: AutomagicaLinks
+Plugin Name: automagicalinks
 Plugin URI: https://bitbucket.org/baizmandesign/automagicalinks
 Description: Automagically convert text to internal links on your website.
 Author: Saul Baizman
@@ -16,7 +16,7 @@ add_action( 'admin_menu', 'automagical_links_admin_menu' );
 
 function automagical_links_admin_menu ()
 {
-    add_menu_page ( 'AutomagicaLinks Settings', 'AutomagicaLinks', 'administrator', __FILE__, 'automagical_links_settings_page', plugins_url( '/images/icon.png', __FILE__ ) );
+    add_menu_page ( 'automagicalinks Settings', 'automagicalinks', 'administrator', __FILE__, 'automagical_links_settings_page', plugins_url( '/images/icon.png', __FILE__ ) );
 
     add_action( 'admin_init', 'automagical_links_settings' );
 
@@ -38,7 +38,7 @@ function automagical_links_settings_page ()
 {
     ?>
     <div class="wrap">
-        <h1>AutomagicaLinks Settings</h1>
+        <h1>automagicalinks settings</h1>
         <form method="post" action="options.php">
             <?php settings_fields( 'automagical_links-plugin-settings-group' ); ?>
             <?php do_settings_sections( 'automagical_links-plugin-settings-group' ); ?>
@@ -120,7 +120,7 @@ function automagical_links_settings_page ()
                     <td></td>
                 </tr>
                 <tr valign="top">
-                    <th scope="row">AutomagicaLink Escape Characters:</th>
+                    <th scope="row">automagicalink Escape Characters:</th>
                     <td><input type="text" name="link_escape_character" size="2" maxlength="2"
                                value="<?php echo esc_attr( get_option( 'link_escape_character' ) ); ?>"/></td>
                 </tr>
