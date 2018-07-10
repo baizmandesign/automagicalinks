@@ -30,6 +30,7 @@ function automagical_links_settings ()
     register_setting( 'automagical_links-plugin-settings-group', 'link_end_characters' );
     register_setting( 'automagical_links-plugin-settings-group', 'link_escape_character' );
     register_setting( 'automagical_links-plugin-settings-group', 'allowed_post_types' );
+    register_setting( 'automagical_links-plugin-settings-group', 'excluded_elements' );
 
 }
 
@@ -127,6 +128,10 @@ function automagical_links_settings_page ()
                     <th scope="row"><small>Each word in a phrase must be escaped to prevent automagical links from manifesting.</small></th>
                     <td></td>
                 </tr>
+                <tr valign="top">
+                    <th scope="row">Globally excluded phrases:<br></th>
+                    <td><textarea name="excluded_elements" rows="8" cols="50" placeholder="Enter exclusion item per line."><?php echo esc_attr( get_option( 'excluded_elements' ) ); ?></textarea></td>
+                </tr>
 
             </table>
             <?php
@@ -149,6 +154,7 @@ function automagical_links_filter ( $content ) {
     $link_end_characters = get_option( 'link_end_characters' ) ;
     $link_escape_character = get_option( 'link_escape_character' ) ;
     $allowed_post_types = get_option ('allowed_post_types') ;
+    $excluded_elements = get_option ('excluded_elements') ;
 
     if ( $autolinking ) {
 
@@ -192,6 +198,20 @@ function automagical_links_filter ( $content ) {
                     $replace_pairs[ $search ] = $replace;
                     $duplicates_pairs[ $dupe_search ] = $dupe_replace;
 
+                }
+
+                /*
+                 * Excluded the exceptions.
+                 */
+                $excluded_elements_array = explode("\n",$excluded_elements) ;
+
+                if ($excluded_elements_array) {
+                    foreach ( $excluded_elements_array as $excluded_element ) {
+                        if ( isset ( $replace_pairs[$excluded_element] ) ) {
+                            unset ( $replace_pairs[$excluded_element] ) ;
+                            unset ( $duplicates_pairs[$excluded_element]) ;
+                        }
+                    }
                 }
 
                 // The magic happens here.
