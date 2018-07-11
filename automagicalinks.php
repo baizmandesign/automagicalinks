@@ -16,7 +16,7 @@ add_action( 'admin_menu', 'automagical_links_admin_menu' );
 
 function automagical_links_admin_menu ()
 {
-    add_menu_page ( 'automagicalinks Settings', 'automagicalinks', 'administrator', __FILE__, 'automagical_links_settings_page', plugins_url( '/images/icon.png', __FILE__ ) );
+    add_menu_page ( 'automagicalinks Settings', 'automagicalinks', 'administrator', __FILE__, 'automagical_links_settings_page', 'dashicons-admin-links' );
 
     add_action( 'admin_init', 'automagical_links_settings' );
 
