@@ -131,7 +131,6 @@ function automagicalinks_settings_page ()
                     <th scope="row">Globally excluded phrases:<br></th>
                     <td><textarea name="excluded_elements" rows="8" cols="50" placeholder="Enter exclusion item per line."><?php echo esc_attr( get_option( 'excluded_elements' ) ); ?></textarea></td>
                 </tr>
-
             </table>
             <?php
 
@@ -152,8 +151,8 @@ function automagicalinks_filter ( $content ) {
     $link_start_characters = get_option( 'link_start_characters' ) ;
     $link_end_characters = get_option( 'link_end_characters' ) ;
     $link_escape_character = get_option( 'link_escape_character' ) ;
-    $allowed_post_types = get_option ('allowed_post_types') ;
-    $excluded_elements = get_option ('excluded_elements') ;
+    $allowed_post_types = get_option ( 'allowed_post_types' ) ;
+    $excluded_elements = get_option ( 'excluded_elements' ) ;
 
     if ( $autolinking ) {
 
