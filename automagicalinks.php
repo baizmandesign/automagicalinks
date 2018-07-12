@@ -12,36 +12,35 @@ Version: 0.1
 Author URI: http://baizmandesign.com/
 */
 
-add_action( 'admin_menu', 'automagical_links_admin_menu' );
+add_action( 'admin_menu', 'automagicalinks_admin_menu' );
 
-function automagical_links_admin_menu ()
+function automagicalinks_admin_menu ()
 {
-    add_menu_page ( 'automagicalinks Settings', 'automagicalinks', 'administrator', __FILE__, 'automagical_links_settings_page', 'dashicons-admin-links' );
+    add_menu_page ( 'automagicalinks Settings', 'automagicalinks', 'administrator', __FILE__, 'automagicalinks_settings_page', 'dashicons-admin-links' );
 
-    add_action( 'admin_init', 'automagical_links_settings' );
+    add_action( 'admin_init', 'automagicalinks_settings' );
 
 }
 
-function automagical_links_settings ()
+function automagicalinks_settings ()
 {
-    register_setting( 'automagical_links-plugin-settings-group', 'autolinking' );
-    register_setting( 'automagical_links-plugin-settings-group', 'automagicality' );
-    register_setting( 'automagical_links-plugin-settings-group', 'link_start_characters' );
-    register_setting( 'automagical_links-plugin-settings-group', 'link_end_characters' );
-    register_setting( 'automagical_links-plugin-settings-group', 'link_escape_character' );
-    register_setting( 'automagical_links-plugin-settings-group', 'allowed_post_types' );
-    register_setting( 'automagical_links-plugin-settings-group', 'excluded_elements' );
-
+    register_setting( 'automagicalinks-plugin-settings-group', 'autolinking' );
+    register_setting( 'automagicalinks-plugin-settings-group', 'automagicality' );
+    register_setting( 'automagicalinks-plugin-settings-group', 'link_start_characters' );
+    register_setting( 'automagicalinks-plugin-settings-group', 'link_end_characters' );
+    register_setting( 'automagicalinks-plugin-settings-group', 'link_escape_character' );
+    register_setting( 'automagicalinks-plugin-settings-group', 'allowed_post_types' );
+    register_setting( 'automagicalinks-plugin-settings-group', 'excluded_elements' );
 }
 
-function automagical_links_settings_page ()
+function automagicalinks_settings_page ()
 {
     ?>
     <div class="wrap">
         <h1>automagicalinks settings</h1>
         <form method="post" action="options.php">
-            <?php settings_fields( 'automagical_links-plugin-settings-group' ); ?>
-            <?php do_settings_sections( 'automagical_links-plugin-settings-group' ); ?>
+            <?php settings_fields( 'automagicalinks-plugin-settings-group' ); ?>
+            <?php do_settings_sections( 'automagicalinks-plugin-settings-group' ); ?>
             <table class="form-table">
             <tbody>
             <tr>
@@ -144,7 +143,7 @@ function automagical_links_settings_page ()
     </div>
 <?php }
 
-function automagical_links_filter ( $content ) {
+function automagicalinks_filter ( $content ) {
 
     global $wpdb;
 
@@ -247,4 +246,4 @@ function automagical_links_filter ( $content ) {
 
 }
 
-add_filter( 'the_content', 'automagical_links_filter' ) ;
+add_filter( 'the_content', 'automagicalinks_filter' ) ;
