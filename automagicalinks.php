@@ -31,6 +31,7 @@ function automagicalinks_settings ()
     register_setting( 'automagicalinks-plugin-settings-group', 'link_escape_character' );
     register_setting( 'automagicalinks-plugin-settings-group', 'allowed_post_types' );
     register_setting( 'automagicalinks-plugin-settings-group', 'excluded_elements' );
+    register_setting( 'automagicalinks-plugin-settings-group', 'aliases' );
 }
 
 function automagicalinks_settings_page ()
@@ -110,6 +111,10 @@ function automagicalinks_settings_page ()
                                value="<?php echo esc_attr( get_option( 'link_end_characters' ) ); ?>"/></td>
                 </tr>
                 <tr valign="top">
+                    <th scope="row">Aliases:<br></th>
+                    <td><textarea name="aliases" rows="8" cols="50" placeholder="William Smith=Will Smith,Willy Smith"><?php echo esc_attr ( get_option ( 'aliases' ) ) ; ?></textarea></td>
+                </tr>
+                <tr valign="top">
                     <th scope="row"><label for="automagicality">Enable Automagicality:</label></th>
                     <td><input type="checkbox" name="automagicality" id="automagicality"
                                value="1"<?php checked ( '1', get_option( 'automagicality' ), true ); ?>/></td>
@@ -153,6 +158,7 @@ function automagicalinks_filter ( $content ) {
     $link_escape_character = get_option( 'link_escape_character' ) ;
     $allowed_post_types = get_option ( 'allowed_post_types' ) ;
     $excluded_elements = get_option ( 'excluded_elements' ) ;
+    $aliases = get_option ( 'aliases' ) ;
 
     if ( $autolinking ) {
 
@@ -182,6 +188,43 @@ function automagicalinks_filter ( $content ) {
 
             if ( $all_pages ) {
 
+                // Create aliases.
+                if ( $aliases ) {
+
+                    $aliases_substitutions = array ();
+
+                    $aliases_array = explode( "\n", $aliases );
+
+                    foreach ( $aliases_array as $alias ) {
+
+                        // Is this a validly formatted line?
+                        if ( strstr( $alias, '=' ) ) {
+
+                            list ( $real_title, $synonyms ) = explode( '=', $alias );
+
+                            // Does this alias have multiple synonyms?
+                            if ( strstr( $synonyms, ',' ) ) {
+                                $synonyms_array = explode( ',', $synonyms );
+                            } else {
+                                $synonyms_array[] = $synonyms;
+                            }
+
+                            foreach ( $synonyms_array as $synonym ) {
+                                $aliases_substitutions[$real_title][] = $synonym ;
+                            }
+
+                            // Check that we're not replacing an alias with a page that exists.
+                            foreach ( $all_pages as $page ) {
+                                if ( $page->title == $real_title ) {
+                                    unset ( $aliases_substitutions[$real_title] ) ;
+                                }
+                            }
+
+                        }
+
+                    }
+                }
+
                 foreach ( $all_pages as $page ) {
 
                     // Look for double brackets or not?
@@ -192,6 +235,27 @@ function automagicalinks_filter ( $content ) {
                     // <a href=""><a href="">Word</a></a>
                     $dupe_search = sprintf( '<a href="%1$s">',$page->permalink).sprintf( '<a href="%1$s">',$page->permalink).$page->post_title.'</a>'.'</a>';
                     $dupe_replace = $replace;
+
+                    // Does the current page have any alias substitutions?
+                    if ( isset ( $aliases_substitutions[$page->post_title]) ) {
+
+                        foreach ( $aliases_substitutions as $real => $akas ) {
+
+                            foreach ( $akas as $aka ) {
+
+                                $aka_search = $automagicality ? $aka : $link_start_characters . $aka . $link_end_characters;
+                                $aka_replace = sprintf( '<a href="%1$s">%2$s</a>', $page->permalink, $aka ) ;
+                                $aka_dupe_search = sprintf( '<a href="%1$s">',$page->permalink).sprintf( '<a href="%1$s">',$page->permalink).$aka.'</a>'.'</a>';
+                                $aka_dupe_replace = $aka_replace ;
+
+                                $replace_pairs[ $aka_search ] = $aka_replace ;
+                                $duplicates_pairs[ $aka_dupe_search ] = $aka_dupe_replace ;
+
+                            }
+
+                        }
+
+                    }
 
                     $replace_pairs[ $search ] = $replace;
                     $duplicates_pairs[ $dupe_search ] = $dupe_replace;
