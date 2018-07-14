@@ -210,7 +210,8 @@ function automagicalinks_filter ( $content ) {
                             }
 
                             foreach ( $synonyms_array as $synonym ) {
-                                $aliases_substitutions[$real_title][] = $synonym ;
+                                // The trim() call removes a newline character.
+                                $aliases_substitutions[$real_title][] = trim ( $synonym ) ;
                             }
 
                             // Check that we're not replacing an alias with a page that exists.
@@ -269,6 +270,8 @@ function automagicalinks_filter ( $content ) {
 
                 if ($excluded_elements_array) {
                     foreach ( $excluded_elements_array as $excluded_element ) {
+                        // Remove newline character.
+                        $excluded_element = trim ( $excluded_element ) ;
                         if ( isset ( $replace_pairs[$excluded_element] ) ) {
                             unset ( $replace_pairs[$excluded_element] ) ;
                             unset ( $duplicates_pairs[$excluded_element]) ;
