@@ -178,11 +178,12 @@ function automagicalinks_filter ( $content ) {
             // In the wp_options table there is a record where option_name = "permalink_structure",
             // according to https://wordpress.stackexchange.com/questions/58625/where-is-permalink-info-stored-in-database
 
-            $all_pages_sql = sprintf ("SELECT ID, post_title, post_name, post_type, concat_ws('/','%s', post_type, post_name,'') AS permalink FROM %s WHERE post_type IN ('%s') AND post_title != '%s'",
+            $all_pages_sql = sprintf ("SELECT ID, post_title, post_name, post_type, concat_ws('/','%s', post_type, post_name,'') AS permalink FROM %s WHERE post_type IN ('%s') AND post_title != '%s' and post_status = '%s'",
                 'http://' . $_SERVER['HTTP_HOST'],
                 $wpdb->posts,
                 implode("','",$post_types),
-                'Auto Draft') ;
+                'Auto Draft',
+                'publish') ;
 
             $all_pages = $wpdb->get_results($all_pages_sql);
 
