@@ -13,17 +13,16 @@ Author URI: https://baizmandesign.com/
 License: GPLv2
 */
 
-add_action( 'admin_menu', 'automagicalinks_admin_menu', 1 );
+add_action ( 'admin_menu', 'automagicalinks_admin_menu', 1 ) ;
 
-function automagicalinks_admin_menu ()
+function automagicalinks_admin_menu ( )
 {
-    add_menu_page ( 'automagicalinks Settings', 'Automagicalinks', 'administrator', __FILE__, 'automagicalinks_settings_page', 'dashicons-admin-links' );
-
-    add_action( 'admin_init', 'automagicalinks_settings' );
-
+    add_options_page ( 'Automagicalinks Settings', 'Automagicalinks', 'manage_options', 'automagicalinks', 'automagicalinks_settings_page', 'dashicons-admin-links' );
 }
 
-function automagicalinks_settings ()
+add_action( 'admin_init', 'automagicalinks_settings' );
+
+function automagicalinks_settings ( )
 {
     register_setting( 'automagicalinks-plugin-settings-group', 'autolinking' );
     register_setting( 'automagicalinks-plugin-settings-group', 'automagicality' );
@@ -35,14 +34,57 @@ function automagicalinks_settings ()
     register_setting( 'automagicalinks-plugin-settings-group', 'aliases' );
 }
 
+add_action ( 'admin_post_update', 'save_automagicalinks_settings' ) ;
+
+function save_automagicalinks_settings ( ) {
+    // Check that user has proper security level
+    if ( ! current_user_can ( 'manage_options' ) ) {
+        wp_die ( 'Not allowed' ) ;
+    }
+
+
+    // Store updated options array to database
+
+    $options = array (
+        'autolinking',
+        'automagicality',
+        'link_start_characters',
+        'link_end_characters',
+        'link_escape_character',
+        'allowed_post_types',
+        'excluded_elements',
+        'aliases',
+    ) ;
+
+    foreach ( $options as $option ) {
+        update_option( $option, $_POST[$option] );
+    }
+
+    wp_redirect (
+        add_query_arg (
+            array (
+                'page' => 'automagicalinks',
+                'message' => '1',
+            ),
+            admin_url ( 'options-general.php' )
+        )
+    );
+
+}
+
 function automagicalinks_settings_page ()
 {
     ?>
     <div class="wrap">
         <h1>Automagicalinks settings</h1>
-        <form method="post" action="options.php">
-            <?php settings_fields( 'automagicalinks-plugin-settings-group' ); ?>
-            <?php do_settings_sections( 'automagicalinks-plugin-settings-group' ); ?>
+        <?php if ( isset( $_GET['message'] ) && $_GET['message'] == '1' ) : ?>
+            <div id='message' class='updated fade'>
+                <p><strong>Settings Saved</strong></p>
+            </div>
+        <?php endif ; ?>
+        <form method="post" action="<?php echo get_admin_url() ; ?>admin-post.php">
+            <?php settings_fields ( 'automagicalinks-plugin-settings-group' ) ; ?>
+            <?php do_settings_sections ( 'automagicalinks-plugin-settings-group' ) ; ?>
             <table class="form-table">
             <tbody>
             <tr>
