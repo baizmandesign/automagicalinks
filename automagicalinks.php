@@ -10,6 +10,7 @@ Description: Automagically convert text to internal links on your website.
 Author: Saul Baizman
 Version: 0.1
 Author URI: https://baizmandesign.com/
+License: GPLv2
 */
 
 add_action( 'admin_menu', 'automagicalinks_admin_menu', 1 );
