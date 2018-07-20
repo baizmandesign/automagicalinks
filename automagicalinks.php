@@ -1,10 +1,10 @@
 <?php
 /**
- * @package automagicalinks
+ * @package Automagicalinks
  * @version 0.1
  */
 /*
-Plugin Name: automagicalinks
+Plugin Name: Automagicalinks
 Plugin URI: https://bitbucket.org/baizmandesign/automagicalinks
 Description: Automagically convert text to internal links on your website.
 Author: Saul Baizman
@@ -16,7 +16,7 @@ add_action( 'admin_menu', 'automagicalinks_admin_menu' );
 
 function automagicalinks_admin_menu ()
 {
-    add_menu_page ( 'automagicalinks Settings', 'automagicalinks', 'administrator', __FILE__, 'automagicalinks_settings_page', 'dashicons-admin-links' );
+    add_menu_page ( 'automagicalinks Settings', 'Automagicalinks', 'administrator', __FILE__, 'automagicalinks_settings_page', 'dashicons-admin-links' );
 
     add_action( 'admin_init', 'automagicalinks_settings' );
 
@@ -38,7 +38,7 @@ function automagicalinks_settings_page ()
 {
     ?>
     <div class="wrap">
-        <h1>automagicalinks settings</h1>
+        <h1>Automagicalinks settings</h1>
         <form method="post" action="options.php">
             <?php settings_fields( 'automagicalinks-plugin-settings-group' ); ?>
             <?php do_settings_sections( 'automagicalinks-plugin-settings-group' ); ?>
