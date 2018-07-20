@@ -1,6 +1,6 @@
 # automagicalinks
 
-This WordPress plugin automagically converts text in the body of your pages whose name corresponds to webpages on your website into links. For example, if you have a webpage entitled "Foo Bar" on your website, when the words "Foo Bar" appear in the text of a page's body, they'll automatically be linked to the "Foo Bar" webpage.
+This WordPress plugin automagically converts text in the body of your pages whose name corresponds to webpages on your website into links. For example, if you have a webpage entitled "Foo Bar" on your website, when the words "Foo Bar" appear in the text of a page named "Hello World," the words will automatically be linked to the "Foo Bar" webpage.
 
 To disable a word or phrase from automagically being linked, define and use escape characters on a per-phrase instance. Or add them to a list of global exclusions on the plugin options page.
 
