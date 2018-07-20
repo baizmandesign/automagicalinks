@@ -88,7 +88,7 @@ function automagicalinks_settings_page ()
             <table class="form-table">
             <tbody>
             <tr>
-                <th scope="row" colspan="4"">Post Types</th>
+                <th scope="row" colspan="4">Post Types</th>
             </tr>
             <?php
 
