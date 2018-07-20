@@ -12,7 +12,7 @@ Version: 0.1
 Author URI: https://baizmandesign.com/
 */
 
-add_action( 'admin_menu', 'automagicalinks_admin_menu' );
+add_action( 'admin_menu', 'automagicalinks_admin_menu', 1 );
 
 function automagicalinks_admin_menu ()
 {
