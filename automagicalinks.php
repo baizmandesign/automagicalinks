@@ -9,7 +9,7 @@ Plugin URI: https://bitbucket.org/baizmandesign/automagicalinks
 Description: Automagically convert text to internal links on your website.
 Author: Saul Baizman
 Version: 0.1
-Author URI: http://baizmandesign.com/
+Author URI: https://baizmandesign.com/
 */
 
 add_action( 'admin_menu', 'automagicalinks_admin_menu' );
