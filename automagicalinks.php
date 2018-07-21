@@ -13,6 +13,25 @@ Author URI: https://baizmandesign.com/
 License: GPLv2
 */
 
+register_activation_hook ( __FILE__, 'automagicalinks_set_default_options_array' );
+
+function automagicalinks_set_default_options_array ( ) {
+    // Page 78 in WP Plugin Development Cookbook.
+    $options = array (
+        'autolinking' => '',
+        'automagicality' => '',
+        'link_start_characters' => '',
+        'link_end_characters' => '',
+        'link_escape_character' => '',
+        'allowed_post_types' => '',
+        'excluded_elements' => '',
+        'aliases' => '',
+    ) ;
+
+    update_option ( 'automagicalinks_options', $options );
+
+}
+
 add_action ( 'admin_menu', 'automagicalinks_admin_menu', 1 ) ;
 
 function automagicalinks_admin_menu ( )
@@ -42,23 +61,21 @@ function save_automagicalinks_settings ( ) {
         wp_die ( 'Not allowed' ) ;
     }
 
+    $automagicalinks_options = get_option ( 'automagicalinks_options' ) ;
 
-    // Store updated options array to database
+    $updated_options = array ( ) ;
 
-    $options = array (
-        'autolinking',
-        'automagicality',
-        'link_start_characters',
-        'link_end_characters',
-        'link_escape_character',
-        'allowed_post_types',
-        'excluded_elements',
-        'aliases',
-    ) ;
-
-    foreach ( $options as $option ) {
-        update_option( $option, $_POST[$option] );
+    foreach ( $automagicalinks_options as $option => $value ) {
+        if ( isset ( $_POST[$option] ) ) {
+            $updated_options[$option] = $_POST[$option] ;
+        }
+        else {
+            // For the checkboxes.
+            $updated_options[$option] = '' ;
+        }
     }
+
+    update_option ( 'automagicalinks_options', $updated_options );
 
     wp_redirect (
         add_query_arg (
@@ -74,6 +91,9 @@ function save_automagicalinks_settings ( ) {
 
 function automagicalinks_settings_page ()
 {
+
+    $automagicalinks_options = get_option ( 'automagicalinks_options' ) ;
+
     ?>
     <div class="wrap">
         <h1>Automagicalinks settings</h1>
@@ -94,7 +114,7 @@ function automagicalinks_settings_page ()
 
             $all_post_types = get_post_types()  ;
 
-            $allowed_post_types = get_option ('allowed_post_types') ;
+            $allowed_post_types = $automagicalinks_options['allowed_post_types'] ;
 
             $columns = 4 ;
 
@@ -115,7 +135,7 @@ function automagicalinks_settings_page ()
                 $replace['wp'] = 'WP' ;
                 $name = ucwords( strtr ( $name, $replace ) ) ;
 
-                printf( '<td><input type="checkbox" name="allowed_post_types[%1$s]" id="posts_%3$d" value="1"' . checked ( '1', isset ( $allowed_post_types[$value] ), false ) . '> <label for="posts_%3$d">%2$s</label></td>', $value, $name, $post_counter );
+                printf ( '<td><input type="checkbox" name="allowed_post_types[%1$s]" id="posts_%3$d" value="1"' . checked ( '1', isset ( $allowed_post_types[$value] ), false ) . '> <label for="posts_%3$d">%2$s</label></td>', $value, $name, $post_counter );
 
                 $column_counter++ ;
 
@@ -137,30 +157,30 @@ function automagicalinks_settings_page ()
                 <tr valign="top">
                     <th scope="row" width="30%"><label for="autolinking">Enable Autolinking:</label></th>
                     <td width="70%"><input type="checkbox" name="autolinking" id="autolinking"
-                               value="1" <?php checked ( '1', get_option( 'autolinking' ), true ); ?>/></td>
+                               value="1" <?php checked ( '1', $automagicalinks_options['autolinking'], true ); ?>/></td>
                 </tr>
                 <tr valign="top">
-                    <th scope="row"><small>With autolinks, any <?php echo esc_attr( get_option( 'link_start_characters' ) ); ?>text<?php echo esc_attr( get_option( 'link_end_characters' ) ); ?> in the body of a page that matches a page name  will be linked to that page.</small></th>
+                    <th scope="row"><small>With autolinks, any <?php echo esc_attr( get_option( 'link_start_characters' ) ); ?>text<?php echo esc_attr( $automagicalinks_options['link_end_characters'] ); ?> in the body of a page that matches a page name  will be linked to that page.</small></th>
                     <td></td>
                 </tr>
                 <tr valign="top">
                     <th scope="row">Link Start Characters:</th>
                     <td><input type="text" name="link_start_characters" size="2" maxlength="2"
-                               value="<?php echo esc_attr( get_option( 'link_start_characters' ) ); ?>"/></td>
+                               value="<?php echo esc_attr( $automagicalinks_options['link_start_characters'] ); ?>"/></td>
                 </tr>
                 <tr valign="top">
                     <th scope="row">Link End Characters:</th>
                     <td><input type="text" name="link_end_characters" size="2" maxlength="2"
-                               value="<?php echo esc_attr( get_option( 'link_end_characters' ) ); ?>"/></td>
+                               value="<?php echo esc_attr( $automagicalinks_options['link_end_characters'] ); ?>"/></td>
                 </tr>
                 <tr valign="top">
                     <th scope="row">Aliases:<br></th>
-                    <td><textarea name="aliases" rows="8" cols="50" placeholder="William Smith=Will Smith,Willy Smith"><?php echo esc_attr ( get_option ( 'aliases' ) ) ; ?></textarea></td>
+                    <td><textarea name="aliases" rows="8" cols="50" placeholder="William Smith=Will Smith,Willy Smith"><?php echo esc_attr ( $automagicalinks_options['aliases'] ) ; ?></textarea></td>
                 </tr>
                 <tr valign="top">
                     <th scope="row"><label for="automagicality">Enable Automagicality:</label></th>
                     <td><input type="checkbox" name="automagicality" id="automagicality"
-                               value="1"<?php checked ( '1', get_option( 'automagicality' ), true ); ?>/></td>
+                               value="1"<?php checked ( '1', $automagicalinks_options['automagicality'], true ); ?>/></td>
                 </tr>
                 <tr valign="top">
                     <th scope="row"><small style="color: red">Note: enabling Automagicality ignores the link start  and end characters. (Don't worry, they'll be removed.) Use for extreme awesome.</small></th>
@@ -169,7 +189,7 @@ function automagicalinks_settings_page ()
                 <tr valign="top">
                     <th scope="row">automagicalink Escape Characters:</th>
                     <td><input type="text" name="link_escape_character" size="2" maxlength="2"
-                               value="<?php echo esc_attr( get_option( 'link_escape_character' ) ); ?>"/></td>
+                               value="<?php echo esc_attr ( $automagicalinks_options['link_escape_character'] ); ?>"/></td>
                 </tr>
                 <tr valign="top">
                     <th scope="row"><small>Each word in a phrase must be escaped to prevent automagical links from manifesting.</small></th>
@@ -177,7 +197,7 @@ function automagicalinks_settings_page ()
                 </tr>
                 <tr valign="top">
                     <th scope="row">Globally excluded phrases:<br></th>
-                    <td><textarea name="excluded_elements" rows="8" cols="50" placeholder="Enter exclusion item per line."><?php echo esc_attr( get_option( 'excluded_elements' ) ); ?></textarea></td>
+                    <td><textarea name="excluded_elements" rows="8" cols="50" placeholder="Enter exclusion item per line."><?php echo esc_attr ( $automagicalinks_options['excluded_elements'] ); ?></textarea></td>
                 </tr>
             </table>
             <?php
@@ -194,14 +214,16 @@ function automagicalinks_filter ( $content ) {
 
     global $wpdb;
 
-    $autolinking = get_option( 'autolinking' ) ;
-    $automagicality = get_option( 'automagicality' ) ;
-    $link_start_characters = get_option( 'link_start_characters' ) ;
-    $link_end_characters = get_option( 'link_end_characters' ) ;
-    $link_escape_character = get_option( 'link_escape_character' ) ;
-    $allowed_post_types = get_option ( 'allowed_post_types' ) ;
-    $excluded_elements = get_option ( 'excluded_elements' ) ;
-    $aliases = get_option ( 'aliases' ) ;
+    $automagicalinks_options = get_option ( 'automagicalinks_options' ) ;
+
+    $autolinking = $automagicalinks_options['autolinking'] ;
+    $automagicality = $automagicalinks_options['automagicality'] ;
+    $link_start_characters = $automagicalinks_options['link_start_characters'] ;
+    $link_end_characters = $automagicalinks_options['link_end_characters'] ;
+    $link_escape_character = $automagicalinks_options['link_escape_character'] ;
+    $allowed_post_types = $automagicalinks_options['allowed_post_types'] ;
+    $excluded_elements = $automagicalinks_options['excluded_elements'] ;
+    $aliases = $automagicalinks_options['aliases'] ;
 
     if ( $autolinking ) {
 
