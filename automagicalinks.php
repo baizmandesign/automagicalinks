@@ -20,8 +20,7 @@ function automagicalinks_set_default_options_array ( ) {
     $options = array (
         'autolinking' => '',
         'automagicality' => '',
-        'link_start_characters' => '',
-        'link_end_characters' => '',
+        'link_characters' => '',
         'link_escape_character' => '',
         'allowed_post_types' => '',
         'excluded_elements' => '',
@@ -45,8 +44,7 @@ function automagicalinks_settings ( )
 {
     register_setting( 'automagicalinks-plugin-settings-group', 'autolinking' );
     register_setting( 'automagicalinks-plugin-settings-group', 'automagicality' );
-    register_setting( 'automagicalinks-plugin-settings-group', 'link_start_characters' );
-    register_setting( 'automagicalinks-plugin-settings-group', 'link_end_characters' );
+    register_setting( 'automagicalinks-plugin-settings-group', 'link_characters' );
     register_setting( 'automagicalinks-plugin-settings-group', 'link_escape_character' );
     register_setting( 'automagicalinks-plugin-settings-group', 'allowed_post_types' );
     register_setting( 'automagicalinks-plugin-settings-group', 'excluded_elements' );
@@ -75,8 +73,10 @@ function save_automagicalinks_settings ( ) {
         }
     }
 
+    // Update the options.
     update_option ( 'automagicalinks_options', $updated_options );
 
+    // Redirect with success=1 query string.
     wp_redirect (
         add_query_arg (
             array (
@@ -160,18 +160,33 @@ function automagicalinks_settings_page ()
                                value="1" <?php checked ( '1', $automagicalinks_options['autolinking'], true ); ?>/></td>
                 </tr>
                 <tr valign="top">
-                    <th scope="row"><small>With autolinks, any <?php echo esc_attr( get_option( 'link_start_characters' ) ); ?>text<?php echo esc_attr( $automagicalinks_options['link_end_characters'] ); ?> in the body of a page that matches a page name  will be linked to that page.</small></th>
+                    <th scope="row"><small>With autolinks, any text in the body of a page wrapped in link characters (below) and that matches a page name will be linked to that page.</small></th>
                     <td></td>
                 </tr>
                 <tr valign="top">
-                    <th scope="row">Link Start Characters:</th>
-                    <td><input type="text" name="link_start_characters" size="2" maxlength="2"
-                               value="<?php echo esc_attr( $automagicalinks_options['link_start_characters'] ); ?>"/></td>
-                </tr>
-                <tr valign="top">
-                    <th scope="row">Link End Characters:</th>
-                    <td><input type="text" name="link_end_characters" size="2" maxlength="2"
-                               value="<?php echo esc_attr( $automagicalinks_options['link_end_characters'] ); ?>"/></td>
+                    <th scope="row">Link Characters:</th>
+                    <td>
+                        <select name="link_characters">
+                            <?php
+
+                            $link_character_pairs = array (
+                                '[[ ]]',
+                                '{{ }}',
+                                '## ##',
+                                '%% %%',
+                                '|| ||',
+                            ) ;
+
+                            // esc_attr( $automagicalinks_options['link_start_characters'] );
+
+                            foreach ( $link_character_pairs as $pairs ) {
+                                list ( $start, $end ) = explode ( ' ', $pairs ) ;
+                                $selected = $pairs == $automagicalinks_options['link_characters'] ? ' selected' : '' ;
+                                printf ( '<option value="%1$s %2$s"%4$s>%1$s%3$s%2$s</option>', $start, $end, 'text', $selected ) ;
+                            }
+                            ?>
+                        </select>
+                    </td>
                 </tr>
                 <tr valign="top">
                     <th scope="row">Aliases:<br></th>
@@ -183,13 +198,31 @@ function automagicalinks_settings_page ()
                                value="1"<?php checked ( '1', $automagicalinks_options['automagicality'], true ); ?>/></td>
                 </tr>
                 <tr valign="top">
-                    <th scope="row"><small style="color: red">Note: enabling Automagicality ignores the link start  and end characters. (Don't worry, they'll be removed.) Use for extreme awesome.</small></th>
+                    <th scope="row"><small style="color: red">Note: enabling Automagicality ignores the link characters. (Don't worry, they'll be removed.) Use for extreme awesome.</small></th>
                     <td></td>
                 </tr>
                 <tr valign="top">
-                    <th scope="row">automagicalink Escape Characters:</th>
-                    <td><input type="text" name="link_escape_character" size="2" maxlength="2"
-                               value="<?php echo esc_attr ( $automagicalinks_options['link_escape_character'] ); ?>"/></td>
+                    <th scope="row">Automagicalink Escape Characters:</th>
+                    <td>
+                        <select name="link_escape_character">
+                        <?php
+
+                        // investigate esc_attr
+                        // esc_attr ( $automagicalinks_options['link_escape_character'] );
+                        $escape_characters = array (
+                            // '\\',
+                            '!!',
+                            '--',
+                        ) ;
+
+                        foreach ( $escape_characters as $characters ) {
+                            $selected = $characters == $automagicalinks_options['link_escape_character'] ? ' selected' : '' ;
+                            printf ( '<option value="%1$s"%2$s>%1$s</option>', $characters, $selected ) ;
+                        }
+
+                        ?>
+                        </select>
+                    </td>
                 </tr>
                 <tr valign="top">
                     <th scope="row"><small>Each word in a phrase must be escaped to prevent automagical links from manifesting.</small></th>
@@ -218,8 +251,10 @@ function automagicalinks_filter ( $content ) {
 
     $autolinking = $automagicalinks_options['autolinking'] ;
     $automagicality = $automagicalinks_options['automagicality'] ;
-    $link_start_characters = $automagicalinks_options['link_start_characters'] ;
-    $link_end_characters = $automagicalinks_options['link_end_characters'] ;
+    $link_characters = $automagicalinks_options['link_characters'] ;
+
+    list ( $link_start_characters, $link_end_characters ) = explode (' ', $link_characters ) ;
+
     $link_escape_character = $automagicalinks_options['link_escape_character'] ;
     $allowed_post_types = $automagicalinks_options['allowed_post_types'] ;
     $excluded_elements = $automagicalinks_options['excluded_elements'] ;
