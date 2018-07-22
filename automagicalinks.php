@@ -317,7 +317,7 @@ function automagicalinks_filter ( $content ) {
 
                             // Check that we're not replacing an alias with a page that exists.
                             foreach ( $all_pages as $page ) {
-                                if ( $page->title == $real_title ) {
+                                if ( $page->post_title == $real_title ) {
                                     unset ( $aliases_substitutions[$real_title] ) ;
                                 }
                             }
