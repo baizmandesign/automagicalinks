@@ -1,7 +1,7 @@
 === Automagicalinks ===
 Contributors: saulbaizman
 Tags: links
-Tested up to: 4.9.7
+Tested up to: 4.9
 Stable tag: trunk
 Donate link: https://paypal.me/baizmandesign
 License: GPLv2 or later
