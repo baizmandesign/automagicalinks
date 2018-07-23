@@ -112,7 +112,7 @@ function automagicalinks_settings_page ()
             </tr>
             <?php
 
-            $all_post_types = get_post_types()  ;
+            $all_post_types = get_post_types ( )  ;
 
             $allowed_post_types = $automagicalinks_options['allowed_post_types'] ;
 
@@ -177,13 +177,12 @@ function automagicalinks_settings_page ()
                                 '|| ||',
                             ) ;
 
-                            // esc_attr( $automagicalinks_options['link_start_characters'] );
-
                             foreach ( $link_character_pairs as $pairs ) {
                                 list ( $start, $end ) = explode ( ' ', $pairs ) ;
                                 $selected = $pairs == $automagicalinks_options['link_characters'] ? ' selected' : '' ;
                                 printf ( '<option value="%1$s %2$s"%4$s>%1$s%3$s%2$s</option>', $start, $end, 'text', $selected ) ;
                             }
+
                             ?>
                         </select>
                     </td>
@@ -207,10 +206,7 @@ function automagicalinks_settings_page ()
                         <select name="link_escape_character">
                         <?php
 
-                        // investigate esc_attr
-                        // esc_attr ( $automagicalinks_options['link_escape_character'] );
                         $escape_characters = array (
-                            // '\\',
                             '!!',
                             '--',
                         ) ;
