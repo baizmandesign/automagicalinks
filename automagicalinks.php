@@ -16,7 +16,7 @@ License: GPLv2
 register_activation_hook ( __FILE__, 'automagicalinks_set_default_options_array' );
 
 function automagicalinks_set_default_options_array ( ) {
-    // Page 78 in WP Plugin Development Cookbook.
+
     $options = array (
         'autolinking' => '',
         'automagicality' => '',
