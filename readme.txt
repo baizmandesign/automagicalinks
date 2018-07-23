@@ -19,7 +19,7 @@ This WordPress plugin automagically converts text in the body of your pages whos
 
 1. Upload the `automagicalinks` folder to the `/wp-content/plugins/` directory.
 1. Activate the plugin through the 'Plugins' menu in WordPress.
-1. Go to **Settings &amp;gt; Automagicalinks** to enable and configure the plugin.
+1. Go to **Settings > Automagicalinks** to enable and configure the plugin.
 
 == Screenshots ==
 
