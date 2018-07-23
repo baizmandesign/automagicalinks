@@ -23,3 +23,8 @@ This WordPress plugin automagically converts text in the body of your pages whos
 
 1. Screenshot of part of the configuration screen.
 2. Screenshot of part of the configuration screen.
+
+== Changelog ==
+
+= 0.1 =
+* Added first version of plugin.
