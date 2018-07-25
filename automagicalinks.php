@@ -275,7 +275,7 @@ function automagicalinks_filter ( $content ) {
             // according to https://wordpress.stackexchange.com/questions/58625/where-is-permalink-info-stored-in-database
 
             $all_pages_sql = sprintf ("SELECT ID, post_title, post_name, post_type, concat_ws('/','%s', post_type, post_name,'') AS permalink FROM %s WHERE post_type IN ('%s') AND post_title != '%s' and post_status = '%s'",
-                'http://' . $_SERVER['HTTP_HOST'],
+                '//' . $_SERVER['HTTP_HOST'],
                 $wpdb->posts,
                 implode("','",$post_types),
                 'Auto Draft',
