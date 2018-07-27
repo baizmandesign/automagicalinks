@@ -258,7 +258,7 @@ function automagicalinks_filter ( $content ) {
 
     if ( $autolinking ) {
 
-        if ( is_singular ( ) ) {
+        if ( is_singular ( ) && in_the_loop ( ) && is_main_query ( ) ) {
 
             $replace_pairs = array ( ) ;
             $duplicates_pairs = array ( );
