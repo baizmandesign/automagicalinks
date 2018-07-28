@@ -23,6 +23,7 @@ function automagicalinks_set_default_options_array ( ) {
         'link_characters' => '',
         'link_escape_character' => '',
         'allowed_post_types' => '',
+        'allowed_link_names' => '',
         'excluded_elements' => '',
         'aliases' => '',
     ) ;
@@ -47,6 +48,7 @@ function automagicalinks_settings ( )
     register_setting( 'automagicalinks-plugin-settings-group', 'link_characters' );
     register_setting( 'automagicalinks-plugin-settings-group', 'link_escape_character' );
     register_setting( 'automagicalinks-plugin-settings-group', 'allowed_post_types' );
+    register_setting( 'automagicalinks-plugin-settings-group', 'allowed_link_names' );
     register_setting( 'automagicalinks-plugin-settings-group', 'excluded_elements' );
     register_setting( 'automagicalinks-plugin-settings-group', 'aliases' );
 }
@@ -108,13 +110,13 @@ function automagicalinks_settings_page ()
             <table class="form-table">
             <tbody>
             <tr>
-                <th scope="row" colspan="4">Post Types</th>
+                <th scope="row" colspan="4">Post Types Whose Names Will Become Links</th>
             </tr>
             <?php
 
             $all_post_types = get_post_types ( )  ;
 
-            $allowed_post_types = $automagicalinks_options['allowed_post_types'] ;
+            $allowed_link_names = $automagicalinks_options['allowed_link_names'] ;
 
             $columns = 4 ;
 
@@ -126,21 +128,21 @@ function automagicalinks_settings_page ()
 
             foreach ( $all_post_types as $name => $value ) {
 
-                if ( $column_counter%$columns==0 ) {
+                if ( $column_counter%$columns == 0 ) {
                     printf( '<tr>' );
                 }
 
                 $replace['-'] = ' ' ;
                 $replace['_'] = ' ' ;
                 $replace['wp'] = 'WP' ;
-                $name = ucwords( strtr ( $name, $replace ) ) ;
+                $name = ucwords ( strtr ( $name, $replace ) ) ;
 
-                printf ( '<td><input type="checkbox" name="allowed_post_types[%1$s]" id="posts_%3$d" value="1"' . checked ( '1', isset ( $allowed_post_types[$value] ), false ) . '> <label for="posts_%3$d">%2$s</label></td>', $value, $name, $post_counter );
+                printf ( '<td><input type="checkbox" name="allowed_link_names[%1$s]" id="posts_%3$d" value="1"' . checked ( '1', isset ( $allowed_link_names[$value] ), false ) . '> <label for="posts_%3$d">%2$s</label></td>', $value, $name, $post_counter );
 
                 $column_counter++ ;
 
-                if ( $column_counter%$columns==0 ) {
-                    printf( '</tr>' );
+                if ( $column_counter%$columns == 0 ) {
+                    printf ( '</tr>' );
                     $column_counter = 0;
                 }
 
@@ -154,10 +156,55 @@ function automagicalinks_settings_page ()
             <!--////////////////////////////////////////////////////////////-->
 
             <table class="form-table">
+                <tbody>
+                <tr>
+                    <th scope="row" colspan="4">Post Types Whose Text Will Be Scanned For The Names Of The Post Types Identified Above</th>
+                </tr>
+                <?php
+
+                $allowed_post_types = $automagicalinks_options['allowed_post_types'] ;
+
+                $columns = 4 ;
+
+                $column_counter = 0;
+
+                $post_counter = 0 ;
+
+                ksort ($all_post_types);
+
+                foreach ( $all_post_types as $name => $value ) {
+
+                    if ( $column_counter%$columns==0 ) {
+                        printf( '<tr>' );
+                    }
+
+                    $replace['-'] = ' ' ;
+                    $replace['_'] = ' ' ;
+                    $replace['wp'] = 'WP' ;
+                    $name = ucwords( strtr ( $name, $replace ) ) ;
+
+                    printf ( '<td><input type="checkbox" name="allowed_post_types[%1$s]" id="posts_%3$d" value="1"' . checked ( '1', isset ( $allowed_post_types[$value] ), false ) . '> <label for="posts_%3$d">%2$s</label></td>', $value, $name, $post_counter );
+
+                    $column_counter++ ;
+
+                    if ( $column_counter%$columns==0 ) {
+                        printf( '</tr>' );
+                        $column_counter = 0;
+                    }
+
+                    $post_counter++ ;
+                }
+
+                ?>
+                </tbody>
+            </table>
+
+            <!--////////////////////////////////////////////////////////////-->
+
+            <table class="form-table">
                 <tr valign="top">
                     <th scope="row" width="30%"><label for="autolinking">Enable Autolinking:</label></th>
-                    <td width="70%"><input type="checkbox" name="autolinking" id="autolinking"
-                               value="1" <?php checked ( '1', $automagicalinks_options['autolinking'], true ); ?>/></td>
+                    <td width="70%"><input type="checkbox" name="autolinking" id="autolinking" value="1" <?php checked ( '1', $automagicalinks_options['autolinking'], true ); ?>/></td>
                 </tr>
                 <tr valign="top">
                     <th scope="row"><small>With autolinks, any text in the body of a page wrapped in link characters (below) and that matches a page name will be linked to that page.</small></th>
@@ -253,6 +300,7 @@ function automagicalinks_filter ( $content ) {
 
     $link_escape_character = $automagicalinks_options['link_escape_character'] ;
     $allowed_post_types = $automagicalinks_options['allowed_post_types'] ;
+    $allowed_link_names = $automagicalinks_options['allowed_link_names'] ;
     $excluded_elements = $automagicalinks_options['excluded_elements'] ;
     $aliases = $automagicalinks_options['aliases'] ;
 
@@ -260,12 +308,21 @@ function automagicalinks_filter ( $content ) {
 
         if ( is_singular ( ) && in_the_loop ( ) && is_main_query ( ) ) {
 
+            // Check for whether we're looking at an allowed post type.
+            $post_types = array_keys ( $allowed_post_types ) ;
+
+            $this_post_type = get_post_type ( ) ;
+
+            if ( ! in_array ( $this_post_type, $post_types ) ) {
+                return $content ;
+            }
+
             $replace_pairs = array ( ) ;
             $duplicates_pairs = array ( );
 
-            $post_types = array_keys ( $allowed_post_types ) ;
+            $link_names = array_keys ( $allowed_link_names ) ;
 
-            if ( ! $post_types ) {
+            if ( ! $link_names ) {
                 return $content ;
             }
 
@@ -277,7 +334,7 @@ function automagicalinks_filter ( $content ) {
             $all_pages_sql = sprintf ("SELECT ID, post_title, post_name, post_type, concat_ws('/','%s', post_type, post_name,'') AS permalink FROM %s WHERE post_type IN ('%s') AND post_title != '%s' and post_status = '%s'",
                 '//' . $_SERVER['HTTP_HOST'],
                 $wpdb->posts,
-                implode("','",$post_types),
+                implode ( "','", $link_names ),
                 'Auto Draft',
                 'publish') ;
 
@@ -377,11 +434,11 @@ function automagicalinks_filter ( $content ) {
                 }
 
                 // The magic happens here.
-                $content = strtr( $content, $replace_pairs );
-                $content = strtr( $content, $duplicates_pairs );
+                $content = strtr ( $content, $replace_pairs );
+                $content = strtr ( $content, $duplicates_pairs );
 
                 // Remove escape character.
-                $content = str_replace( $link_escape_character, '', $content );
+                $content = str_replace ( $link_escape_character, '', $content );
             }
             else {
                 return $content;
@@ -409,4 +466,4 @@ function automagicalinks_filter ( $content ) {
 
 }
 
-add_filter( 'the_content', 'automagicalinks_filter' ) ;
+add_filter ( 'the_content', 'automagicalinks_filter' ) ;
