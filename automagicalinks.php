@@ -5,7 +5,7 @@
  */
 /*
 Plugin Name: Automagicalinks
-Plugin URI: https://github.com/saulbaizman/automagicalinks
+Plugin URI: https://github.com/baizmandesign/automagicalinks
 Description: Automagically convert text to internal links on your website.
 Author: Saul Baizman
 Version: 0.1
